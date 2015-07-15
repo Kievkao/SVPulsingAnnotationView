@@ -8,6 +8,8 @@
 #import "SVPulsingAnnotationView.h"
 #import <QuartzCore/QuartzCore.h>
 
+static CGFloat const kImageDiameter = 70.0f;
+
 @interface SVPulsingAnnotationView ()
 
 @property (nonatomic, strong) CALayer *shinyDotLayer;
@@ -39,7 +41,7 @@
     if(self = [super initWithAnnotation:annotation reuseIdentifier:reuseIdentifier]) {
         self.layer.anchorPoint = CGPointMake(0.5, 0.5);
         self.calloutOffset = CGPointMake(0, 4);
-        self.bounds = CGRectMake(0, 0, 22, 22);
+        self.bounds = CGRectMake(0, 0, kImageDiameter, kImageDiameter);
         self.pulseScaleFactor = 5.3;
         self.pulseAnimationDuration = 1.5;
         self.outerPulseAnimationDuration = 3;
@@ -148,10 +150,7 @@
     if(self.superview)
         [self rebuildLayers];
     
-    self.imageView.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    self.imageView.bounds = CGRectMake(0, 0, ceil(image.size.width), ceil(image.size.height));
-    self.imageView.center = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
-    self.imageView.tintColor = self.annotationColor;
+    self.imageView.image = image;
 }
 
 - (void)setHeadingImage:(UIImage *)image {
@@ -195,7 +194,7 @@
         
         CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
         animation.duration = self.outerPulseAnimationDuration;
-        animation.values = @[@0.45, @0.45, @0];
+        animation.values = @[@0.2, @0.9, @0];
         animation.keyTimes = @[@0, @0.2, @1];
         animation.removedOnCompletion = NO;
         [animations addObject:animation];
@@ -210,7 +209,9 @@
 - (UIImageView *)imageView {
     if(!_imageView) {
         _imageView = [[UIImageView alloc] initWithFrame:self.bounds];
-        _imageView.contentMode = UIViewContentModeTopLeft;
+        _imageView.contentMode = UIViewContentModeScaleAspectFit;
+        _imageView.layer.cornerRadius = kImageDiameter / 2;
+        _imageView.clipsToBounds = YES;
     }
     return _imageView;
 }

@@ -23,6 +23,7 @@
 		22AE8E4316E42248009CF494 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22AE8E4216E42248009CF494 /* CoreLocation.framework */; };
 		22AE8E4816E48F2E009CF494 /* SVAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 22AE8E4716E48F2E009CF494 /* SVAnnotation.m */; };
 		22B6538418429E1100F8519D /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 22B6538318429E1100F8519D /* README.md */; };
+		DE5111F71B56860E0040CBC5 /* demo_avatar_cook.png in Resources */ = {isa = PBXBuildFile; fileRef = DE5111F61B56860E0040CBC5 /* demo_avatar_cook.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +50,7 @@
 		22AE8E4616E48F2E009CF494 /* SVAnnotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVAnnotation.h; sourceTree = "<group>"; };
 		22AE8E4716E48F2E009CF494 /* SVAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVAnnotation.m; sourceTree = "<group>"; };
 		22B6538318429E1100F8519D /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		DE5111F61B56860E0040CBC5 /* demo_avatar_cook.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = demo_avatar_cook.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +120,7 @@
 		22AE8E1E16E41FBC009CF494 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				DE5111F61B56860E0040CBC5 /* demo_avatar_cook.png */,
 				22AE8E1F16E41FBC009CF494 /* SVPulsingAnnotationView-Info.plist */,
 				22AE8E2016E41FBC009CF494 /* InfoPlist.strings */,
 				22AE8E2316E41FBC009CF494 /* main.m */,
@@ -195,6 +198,7 @@
 				22AE8E2A16E41FBC009CF494 /* Default.png in Resources */,
 				22B6538418429E1100F8519D /* README.md in Resources */,
 				22AE8E2C16E41FBC009CF494 /* Default@2x.png in Resources */,
+				DE5111F71B56860E0040CBC5 /* demo_avatar_cook.png in Resources */,
 				22AE8E2E16E41FBC009CF494 /* Default-568h@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
