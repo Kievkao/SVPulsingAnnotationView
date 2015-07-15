@@ -56,6 +56,9 @@
 		if(pulsingView == nil) {
 			pulsingView = [[SVPulsingAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identifier];
             pulsingView.pulseColor = [UIColor colorWithRed:62.0/255.0 green:66.0/255.0 blue:110.0/255.0 alpha:1];
+            pulsingView.pulseScaleFactor = 3;
+            pulsingView.outerPulseAnimationDuration = 2;
+            pulsingView.delayBetweenPulseCycles = 0;
             pulsingView.image = [UIImage imageNamed:@"demo_avatar_cook"];
             pulsingView.canShowCallout = YES;
         }
