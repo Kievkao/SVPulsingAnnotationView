@@ -41,12 +41,14 @@
     MKCoordinateRegion region = MKCoordinateRegionMake(coordinate, MKCoordinateSpanMake(0.1, 0.1));
     [self.mapView setRegion:region animated:NO];
     
+    // remove zoom by tap
+    UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:nil action:nil];
+    doubleTap.numberOfTapsRequired = 2;
+    [self.mapView.subviews[0] addGestureRecognizer:doubleTap];
+    
     SVAnnotation *annotation = [[SVAnnotation alloc] initWithCoordinate:coordinate];
-    annotation.title = @"Current Location";
-    annotation.subtitle = @"Montréal, QC";
     [self.mapView addAnnotation:annotation];
 }
-
 
 - (MKAnnotationView *)mapView:(MKMapView *)mapView viewForAnnotation:(id<MKAnnotation>)annotation {
     if([annotation isKindOfClass:[SVAnnotation class]]) {

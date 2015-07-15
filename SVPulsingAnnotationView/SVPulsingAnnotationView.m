@@ -17,11 +17,9 @@ static CGFloat const kImageDiameter = 70.0f;
 @property (nonatomic, strong) UIImageView *imageView;
 @property (nonatomic, strong) UIImageView *headingImageView;
 
-@property (nonatomic, strong) CALayer *whiteDotLayer;
-@property (nonatomic, strong) CALayer *colorDotLayer;
-
 @property (nonatomic, strong) CALayer *mainHaloLayer;
 @property (nonatomic, strong) CALayer *secondaryHaloLayer;
+@property (nonatomic, strong) NSMutableArray *additionalHaloLayers;
 
 @property (nonatomic, strong) CAAnimationGroup *mainAnimationGroup;
 @property (nonatomic, strong) CAAnimationGroup *secondaryAnimationGroup;
@@ -51,6 +49,9 @@ static CGFloat const kImageDiameter = 70.0f;
         self.delayBetweenPulseCycles = 0;
         self.annotationColor = [UIColor colorWithRed:0.000 green:0.478 blue:1.000 alpha:1];
         
+        UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapDetected)];
+        [self addGestureRecognizer:tapGesture];
+        
         self.willMoveToSuperviewAnimationBlock = ^(SVPulsingAnnotationView *annotationView, UIView *superview) {
             CAKeyframeAnimation *bounceAnimation = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
             CAMediaTimingFunction *easeInOut = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
@@ -64,18 +65,28 @@ static CGFloat const kImageDiameter = 70.0f;
     return self;
 }
 
+- (void)tapDetected {
+    CALayer *newLayer = [CALayer layer];
+    [self configureLayer:newLayer];
+    [self.layer insertSublayer:newLayer below:self.secondaryHaloLayer];
+    
+    CAKeyframeAnimation *bounceAnimation = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
+    CAMediaTimingFunction *easeInOut = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+    
+    bounceAnimation.values = @[@0.05, @1.25, @0.8, @1.1, @0.9, @1.0];
+    bounceAnimation.duration = 0.3;
+    bounceAnimation.timingFunctions = @[easeInOut, easeInOut, easeInOut, easeInOut, easeInOut, easeInOut];
+    [self.imageView.layer addAnimation:bounceAnimation forKey:@"popIn"];
+}
+
 - (void)rebuildLayers {
-    [_whiteDotLayer removeFromSuperlayer];
-    _whiteDotLayer = nil;
-    
-    [_colorDotLayer removeFromSuperlayer];
-    _colorDotLayer = nil;
-    
     [_mainHaloLayer removeFromSuperlayer];
     _mainHaloLayer = nil;
     
     [_secondaryHaloLayer removeFromSuperlayer];
     _secondaryHaloLayer = nil;
+    
+    [_additionalHaloLayers removeAllObjects];
     
     _mainAnimationGroup = nil;
     
@@ -94,12 +105,8 @@ static CGFloat const kImageDiameter = 70.0f;
     
     [self.layer addSublayer:self.mainHaloLayer];
     [self.layer addSublayer:self.secondaryHaloLayer];
-    [self.layer addSublayer:self.whiteDotLayer];
     
-    if(self.image)
-        [self addSubview:self.imageView];
-    else
-        [self.layer addSublayer:self.colorDotLayer];
+    [self addSubview:self.imageView];
 }
 
 - (void)willMoveToSuperview:(UIView *)superview {
@@ -262,70 +269,6 @@ static CGFloat const kImageDiameter = 70.0f;
     return _headingImageView;
 }
 
-- (CALayer*)whiteDotLayer {
-    if(!_whiteDotLayer) {
-        _whiteDotLayer = [CALayer layer];
-        _whiteDotLayer.bounds = self.bounds;
-        _whiteDotLayer.contents = (id)[self circleImageWithColor:[UIColor whiteColor] height:self.bounds.size.height].CGImage;
-        _whiteDotLayer.position = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
-        _whiteDotLayer.contentsGravity = kCAGravityCenter;
-        _whiteDotLayer.contentsScale = [UIScreen mainScreen].scale;
-        _whiteDotLayer.shadowColor = [UIColor blackColor].CGColor;
-        _whiteDotLayer.shadowOffset = CGSizeMake(0, 2);
-        _whiteDotLayer.shadowRadius = 3;
-        _whiteDotLayer.shadowOpacity = 0.3;
-        _whiteDotLayer.shouldRasterize = YES;
-        _whiteDotLayer.rasterizationScale = [UIScreen mainScreen].scale;
-    }
-    return _whiteDotLayer;
-}
-
-- (CALayer*)colorDotLayer {
-    if(!_colorDotLayer) {
-        _colorDotLayer = [CALayer layer];
-        CGFloat width = self.bounds.size.width-6;
-        _colorDotLayer.bounds = CGRectMake(0, 0, width, width);
-        _colorDotLayer.allowsGroupOpacity = YES;
-        _colorDotLayer.backgroundColor = self.annotationColor.CGColor;
-        _colorDotLayer.cornerRadius = width/2;
-        _colorDotLayer.position = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
-        
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-            
-            if(self.delayBetweenPulseCycles != INFINITY) {
-                CAMediaTimingFunction *defaultCurve = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionDefault];
-
-                CAAnimationGroup *animationGroup = [CAAnimationGroup animation];
-                animationGroup.duration = self.pulseAnimationDuration;
-                animationGroup.repeatCount = INFINITY;
-                animationGroup.removedOnCompletion = NO;
-                animationGroup.autoreverses = YES;
-                animationGroup.timingFunction = defaultCurve;
-                animationGroup.speed = 1;
-                animationGroup.fillMode = kCAFillModeBoth;
-
-                CABasicAnimation *pulseAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale.xy"];
-                pulseAnimation.fromValue = @0.8;
-                pulseAnimation.toValue = @1;
-                pulseAnimation.duration = self.pulseAnimationDuration;
-                
-                CABasicAnimation *opacityAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
-                opacityAnimation.fromValue = @0.8;
-                opacityAnimation.toValue = @1;
-                opacityAnimation.duration = self.pulseAnimationDuration;
-                
-                animationGroup.animations = @[pulseAnimation, opacityAnimation];
-
-                dispatch_async(dispatch_get_main_queue(), ^(void) {
-                    [_colorDotLayer addAnimation:animationGroup forKey:@"pulse"];
-                });
-            }
-        });
-
-    }
-    return _colorDotLayer;
-}
-
 - (CALayer *)mainHaloLayer {
     if(!_mainHaloLayer) {
         _mainHaloLayer = [CALayer layer];
@@ -372,6 +315,64 @@ static CGFloat const kImageDiameter = 70.0f;
         });
     }
     return _secondaryHaloLayer;
+}
+
+- (void)configureLayer:(CALayer *)layer {
+    
+    CGFloat width = self.bounds.size.width*self.pulseScaleFactor;
+    layer.bounds = CGRectMake(0, 0, width, width);
+    layer.position = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
+    layer.contentsScale = [UIScreen mainScreen].scale;
+    layer.backgroundColor = self.pulseColor.CGColor;
+    layer.cornerRadius = width/2;
+    layer.opacity = 0;
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+        if(self.delayBetweenPulseCycles != INFINITY) {
+            CAAnimationGroup *animationGroup = [CAAnimationGroup new];
+            [self configureGroup:animationGroup];
+            
+            dispatch_async(dispatch_get_main_queue(), ^(void) {
+                [layer addAnimation:animationGroup forKey:@"pulse"];
+            });
+        }
+    });
+}
+
+- (void)configureGroup:(CAAnimationGroup *)group {
+    
+    CAMediaTimingFunction *defaultCurve = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+    
+    group.duration = self.outerPulseAnimationDuration + self.delayBetweenPulseCycles;
+    group.repeatCount = 1;
+    group.removedOnCompletion = YES;
+    group.timingFunction = defaultCurve;
+    
+    NSMutableArray *animations = [NSMutableArray new];
+    
+    CABasicAnimation *pulseAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale.xy"];
+    pulseAnimation.fromValue = @(1/self.pulseScaleFactor);
+    pulseAnimation.toValue = @1.0;
+    pulseAnimation.duration = self.outerPulseAnimationDuration;
+    [animations addObject:pulseAnimation];
+    
+    CAKeyframeAnimation *opacityAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
+    opacityAnimation.duration = self.outerPulseAnimationDuration;
+    opacityAnimation.values = @[@0.2, @0.9, @0];
+    opacityAnimation.keyTimes = @[@0, @0.2, @1];
+    opacityAnimation.removedOnCompletion = NO;
+    [animations addObject:opacityAnimation];
+    
+    group.animations = animations;
+}
+
+- (NSMutableArray *)additionalHaloLayers {
+    
+    if (!_additionalHaloLayers) {
+        _additionalHaloLayers = [NSMutableArray new];
+    }
+    
+    return _additionalHaloLayers;
 }
 
 - (UIImage*)circleImageWithColor:(UIColor*)color height:(float)height {
