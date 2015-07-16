@@ -188,62 +188,43 @@ static CGFloat const kImageDiameter = 70.0f;
     return _pulseColor;
 }
 
-- (CAAnimationGroup*)mainAnimationGroup {
-    if(!_mainAnimationGroup) {
-        CAMediaTimingFunction *defaultCurve = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
-        
+- (void)configurePermamentAnimationGroup:(CAAnimationGroup *)animationGroup {
+    
+    CAMediaTimingFunction *defaultCurve = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+    
+    animationGroup.duration = self.outerPulseAnimationDuration + self.delayBetweenPulseCycles;
+    animationGroup.repeatCount = INFINITY;
+    animationGroup.removedOnCompletion = NO;
+    animationGroup.timingFunction = defaultCurve;
+    
+    NSMutableArray *animations = [NSMutableArray new];
+    
+    CABasicAnimation *pulseAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale.xy"];
+    pulseAnimation.fromValue = @(1/self.pulseScaleFactor);
+    pulseAnimation.toValue = @1.0;
+    pulseAnimation.duration = self.outerPulseAnimationDuration;
+    [animations addObject:pulseAnimation];
+    
+    CAKeyframeAnimation *opacityAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
+    opacityAnimation.duration = self.outerPulseAnimationDuration;
+    opacityAnimation.values = @[@0.2, @0.9, @0];
+    opacityAnimation.keyTimes = @[@0, @0.2, @1];
+    opacityAnimation.removedOnCompletion = NO;
+    [animations addObject:opacityAnimation];
+    
+    animationGroup.animations = animations;
+}
+
+- (CAAnimationGroup *)mainAnimationGroup {
+    if (!_mainAnimationGroup) {
         _mainAnimationGroup = [CAAnimationGroup animation];
-        _mainAnimationGroup.duration = self.outerPulseAnimationDuration + self.delayBetweenPulseCycles;
-        _mainAnimationGroup.repeatCount = INFINITY;
-        _mainAnimationGroup.removedOnCompletion = NO;
-        _mainAnimationGroup.timingFunction = defaultCurve;
-        
-        NSMutableArray *animations = [NSMutableArray new];
-        
-        CABasicAnimation *pulseAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale.xy"];
-        pulseAnimation.fromValue = @(1/self.pulseScaleFactor);
-        pulseAnimation.toValue = @1.0;
-        pulseAnimation.duration = self.outerPulseAnimationDuration;
-        [animations addObject:pulseAnimation];
-        
-        CAKeyframeAnimation *opacityAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
-        opacityAnimation.duration = self.outerPulseAnimationDuration;
-        opacityAnimation.values = @[@0.2, @0.9, @0];
-        opacityAnimation.keyTimes = @[@0, @0.2, @1];
-        opacityAnimation.removedOnCompletion = NO;
-        [animations addObject:opacityAnimation];
-        
-        _mainAnimationGroup.animations = animations;
     }
     return _mainAnimationGroup;
 }
 
-- (CAAnimationGroup*)secondaryAnimationGroup {
-    if(!_secondaryAnimationGroup) {
-        CAMediaTimingFunction *defaultCurve = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
-        
+- (CAAnimationGroup *)secondaryAnimationGroup {
+    if (!_secondaryAnimationGroup) {
         _secondaryAnimationGroup = [CAAnimationGroup animation];
-        _secondaryAnimationGroup.duration = self.outerPulseAnimationDuration + self.delayBetweenPulseCycles;
-        _secondaryAnimationGroup.repeatCount = INFINITY;
-        _secondaryAnimationGroup.removedOnCompletion = NO;
-        _secondaryAnimationGroup.timingFunction = defaultCurve;
-        
-        NSMutableArray *animations = [NSMutableArray new];
-        
-        CABasicAnimation *pulseAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale.xy"];
-        pulseAnimation.fromValue = @(1/self.pulseScaleFactor);
-        pulseAnimation.toValue = @1.0;
-        pulseAnimation.duration = self.outerPulseAnimationDuration;
-        [animations addObject:pulseAnimation];
-        
-        CAKeyframeAnimation *opacityAnimation = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
-        opacityAnimation.duration = self.outerPulseAnimationDuration;
-        opacityAnimation.values = @[@0.2, @0.9, @0];
-        opacityAnimation.keyTimes = @[@0, @0.2, @1];
-        opacityAnimation.removedOnCompletion = NO;
-        [animations addObject:opacityAnimation];
-        
-        _secondaryAnimationGroup.animations = animations;
     }
     return _secondaryAnimationGroup;
 }
@@ -269,6 +250,28 @@ static CGFloat const kImageDiameter = 70.0f;
     return _headingImageView;
 }
 
+- (void)configurePermanentHaloLayer:(CALayer *)layer withAnimationGroup:(CAAnimationGroup *)group {
+    
+    CGFloat width = self.bounds.size.width*self.pulseScaleFactor;
+    layer.bounds = CGRectMake(0, 0, width, width);
+    layer.position = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
+    layer.contentsScale = [UIScreen mainScreen].scale;
+    layer.backgroundColor = self.pulseColor.CGColor;
+    layer.cornerRadius = width/2;
+    layer.opacity = 0;
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+        if(self.delayBetweenPulseCycles != INFINITY) {
+            CAAnimationGroup *animationGroup = group;
+            [self configurePermamentAnimationGroup:animationGroup];
+            
+            dispatch_async(dispatch_get_main_queue(), ^(void) {
+                [layer addAnimation:animationGroup forKey:@"pulse"];
+            });
+        }
+    });
+}
+
 - (CALayer *)mainHaloLayer {
     if(!_mainHaloLayer) {
         _mainHaloLayer = [CALayer layer];
@@ -283,6 +286,8 @@ static CGFloat const kImageDiameter = 70.0f;
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
             if(self.delayBetweenPulseCycles != INFINITY) {
                 CAAnimationGroup *animationGroup = self.mainAnimationGroup;
+                [self configurePermamentAnimationGroup:animationGroup];
+                //[self configurePermamentAnimationGroup:self.mainAnimationGroup];
                 
                 dispatch_async(dispatch_get_main_queue(), ^(void) {
                     [_mainHaloLayer addAnimation:animationGroup forKey:@"pulse"];
@@ -307,6 +312,8 @@ static CGFloat const kImageDiameter = 70.0f;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(self.outerPulseAnimationDuration/2 * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             if(self.delayBetweenPulseCycles != INFINITY) {
                 CAAnimationGroup *animationGroup = self.secondaryAnimationGroup;
+                [self configurePermamentAnimationGroup:animationGroup];
+                //[self configurePermamentAnimationGroup:self.secondaryAnimationGroup];
                 
                 dispatch_async(dispatch_get_main_queue(), ^(void) {
                     [_secondaryHaloLayer addAnimation:animationGroup forKey:@"pulse"];
