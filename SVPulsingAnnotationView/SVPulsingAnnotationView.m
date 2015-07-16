@@ -250,7 +250,7 @@ static CGFloat const kImageDiameter = 70.0f;
     return _headingImageView;
 }
 
-- (void)configurePermanentHaloLayer:(CALayer *)layer withAnimationGroup:(CAAnimationGroup *)group {
+- (void)configurePermanentHaloLayer:(CALayer *)layer withAnimationGroup:(CAAnimationGroup *)group delay:(NSTimeInterval)delay {
     
     CGFloat width = self.bounds.size.width*self.pulseScaleFactor;
     layer.bounds = CGRectMake(0, 0, width, width);
@@ -260,7 +260,7 @@ static CGFloat const kImageDiameter = 70.0f;
     layer.cornerRadius = width/2;
     layer.opacity = 0;
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         if(self.delayBetweenPulseCycles != INFINITY) {
             CAAnimationGroup *animationGroup = group;
             [self configurePermamentAnimationGroup:animationGroup];
@@ -275,25 +275,7 @@ static CGFloat const kImageDiameter = 70.0f;
 - (CALayer *)mainHaloLayer {
     if(!_mainHaloLayer) {
         _mainHaloLayer = [CALayer layer];
-        CGFloat width = self.bounds.size.width*self.pulseScaleFactor;
-        _mainHaloLayer.bounds = CGRectMake(0, 0, width, width);
-        _mainHaloLayer.position = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
-        _mainHaloLayer.contentsScale = [UIScreen mainScreen].scale;
-        _mainHaloLayer.backgroundColor = self.pulseColor.CGColor;
-        _mainHaloLayer.cornerRadius = width/2;
-        _mainHaloLayer.opacity = 0;
-        
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
-            if(self.delayBetweenPulseCycles != INFINITY) {
-                CAAnimationGroup *animationGroup = self.mainAnimationGroup;
-                [self configurePermamentAnimationGroup:animationGroup];
-                //[self configurePermamentAnimationGroup:self.mainAnimationGroup];
-                
-                dispatch_async(dispatch_get_main_queue(), ^(void) {
-                    [_mainHaloLayer addAnimation:animationGroup forKey:@"pulse"];
-                });
-            }
-        });
+        [self configurePermanentHaloLayer:_mainHaloLayer withAnimationGroup:self.mainAnimationGroup delay:0];
     }
     return _mainHaloLayer;
 }
@@ -301,25 +283,7 @@ static CGFloat const kImageDiameter = 70.0f;
 - (CALayer *)secondaryHaloLayer {
     if(!_secondaryHaloLayer) {
         _secondaryHaloLayer = [CALayer layer];
-        CGFloat width = self.bounds.size.width*self.pulseScaleFactor;
-        _secondaryHaloLayer.bounds = CGRectMake(0, 0, width, width);
-        _secondaryHaloLayer.position = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
-        _secondaryHaloLayer.contentsScale = [UIScreen mainScreen].scale;
-        _secondaryHaloLayer.backgroundColor = self.pulseColor.CGColor;
-        _secondaryHaloLayer.cornerRadius = width/2;
-        _secondaryHaloLayer.opacity = 0;
-        
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(self.outerPulseAnimationDuration/2 * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            if(self.delayBetweenPulseCycles != INFINITY) {
-                CAAnimationGroup *animationGroup = self.secondaryAnimationGroup;
-                [self configurePermamentAnimationGroup:animationGroup];
-                //[self configurePermamentAnimationGroup:self.secondaryAnimationGroup];
-                
-                dispatch_async(dispatch_get_main_queue(), ^(void) {
-                    [_secondaryHaloLayer addAnimation:animationGroup forKey:@"pulse"];
-                });
-            }
-        });
+        [self configurePermanentHaloLayer:_secondaryHaloLayer withAnimationGroup:self.secondaryAnimationGroup delay:self.outerPulseAnimationDuration/2];
     }
     return _secondaryHaloLayer;
 }
