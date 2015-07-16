@@ -24,6 +24,7 @@
 		22AE8E4816E48F2E009CF494 /* SVAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 22AE8E4716E48F2E009CF494 /* SVAnnotation.m */; };
 		22B6538418429E1100F8519D /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 22B6538318429E1100F8519D /* README.md */; };
 		DE5111F71B56860E0040CBC5 /* demo_avatar_cook.png in Resources */ = {isa = PBXBuildFile; fileRef = DE5111F61B56860E0040CBC5 /* demo_avatar_cook.png */; };
+		DEC1EE711B57ADFC0050BEF5 /* UIColor+SVHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = DEC1EE701B57ADFC0050BEF5 /* UIColor+SVHelpers.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,6 +52,8 @@
 		22AE8E4716E48F2E009CF494 /* SVAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVAnnotation.m; sourceTree = "<group>"; };
 		22B6538318429E1100F8519D /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		DE5111F61B56860E0040CBC5 /* demo_avatar_cook.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = demo_avatar_cook.png; sourceTree = "<group>"; };
+		DEC1EE6F1B57ADFC0050BEF5 /* UIColor+SVHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+SVHelpers.h"; sourceTree = "<group>"; };
+		DEC1EE701B57ADFC0050BEF5 /* UIColor+SVHelpers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+SVHelpers.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +140,8 @@
 			children = (
 				22AE8E3B16E42052009CF494 /* SVPulsingAnnotationView.h */,
 				22AE8E3C16E42052009CF494 /* SVPulsingAnnotationView.m */,
+				DEC1EE6F1B57ADFC0050BEF5 /* UIColor+SVHelpers.h */,
+				DEC1EE701B57ADFC0050BEF5 /* UIColor+SVHelpers.m */,
 			);
 			name = SVPulsingAnnotationView;
 			path = ../SVPulsingAnnotationView;
@@ -214,6 +219,7 @@
 				22AE8E2816E41FBC009CF494 /* SVAppDelegate.m in Sources */,
 				22AE8E3116E41FBC009CF494 /* SVViewController.m in Sources */,
 				22AE8E3D16E42052009CF494 /* SVPulsingAnnotationView.m in Sources */,
+				DEC1EE711B57ADFC0050BEF5 /* UIColor+SVHelpers.m in Sources */,
 				22AE8E4816E48F2E009CF494 /* SVAnnotation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

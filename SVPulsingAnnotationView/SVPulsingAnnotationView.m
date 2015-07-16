@@ -6,6 +6,7 @@
 //
 
 #import "SVPulsingAnnotationView.h"
+#import "UIColor+SVHelpers.h"
 #import <QuartzCore/QuartzCore.h>
 
 static CGFloat const kImageDiameter = 70.0f;
@@ -67,7 +68,7 @@ static CGFloat const kImageDiameter = 70.0f;
 
 - (void)tapDetected {
     CALayer *newLayer = [CALayer layer];
-    [self configureLayer:newLayer];
+    [self configureSporadicLayer:newLayer];
     [self.layer insertSublayer:newLayer below:self.secondaryHaloLayer];
     
     CAKeyframeAnimation *bounceAnimation = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
@@ -252,13 +253,7 @@ static CGFloat const kImageDiameter = 70.0f;
 
 - (void)configurePermanentHaloLayer:(CALayer *)layer withAnimationGroup:(CAAnimationGroup *)group delay:(NSTimeInterval)delay {
     
-    CGFloat width = self.bounds.size.width*self.pulseScaleFactor;
-    layer.bounds = CGRectMake(0, 0, width, width);
-    layer.position = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
-    layer.contentsScale = [UIScreen mainScreen].scale;
-    layer.backgroundColor = self.pulseColor.CGColor;
-    layer.cornerRadius = width/2;
-    layer.opacity = 0;
+    [self configureLayer:layer];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         if(self.delayBetweenPulseCycles != INFINITY) {
@@ -288,15 +283,9 @@ static CGFloat const kImageDiameter = 70.0f;
     return _secondaryHaloLayer;
 }
 
-- (void)configureLayer:(CALayer *)layer {
+- (void)configureSporadicLayer:(CALayer *)layer {
     
-    CGFloat width = self.bounds.size.width*self.pulseScaleFactor;
-    layer.bounds = CGRectMake(0, 0, width, width);
-    layer.position = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
-    layer.contentsScale = [UIScreen mainScreen].scale;
-    layer.backgroundColor = self.pulseColor.CGColor;
-    layer.cornerRadius = width/2;
-    layer.opacity = 0;
+    [self configureLayer:layer];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void) {
         if(self.delayBetweenPulseCycles != INFINITY) {
@@ -308,6 +297,18 @@ static CGFloat const kImageDiameter = 70.0f;
             });
         }
     });
+}
+
+- (void)configureLayer:(CALayer *)layer {
+    CGFloat width = self.bounds.size.width*self.pulseScaleFactor;
+    layer.bounds = CGRectMake(0, 0, width, width);
+    layer.position = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
+    layer.contentsScale = [UIScreen mainScreen].scale;
+    layer.backgroundColor = self.pulseColor.CGColor;
+    layer.cornerRadius = width/2;
+    layer.borderColor = [self.pulseColor darkerColor].CGColor;
+    layer.borderWidth = 3.0;
+    layer.opacity = 0;
 }
 
 - (void)configureGroup:(CAAnimationGroup *)group {
